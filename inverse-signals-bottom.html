@@ -616,16 +616,22 @@
                 
                 for (let i = 1; i < lines.length; i++) {
                     const parts = lines[i].split(',');
-                    data.push({
-                        date: parts[0],
-                        close: parseFloat(parts[1]),
-                        high: parseFloat(parts[2]),
-                        low: parseFloat(parts[3]),
-                        open: parseFloat(parts[4]),
-                        volume: parseInt(parts[5])
-                    });
+                    if (parts.length >= 6) {
+                        data.push({
+                            date: parts[0].trim(),
+                            close: parseFloat(parts[1]),
+                            high: parseFloat(parts[2]),
+                            low: parseFloat(parts[3]),
+                            open: parseFloat(parts[4]),
+                            volume: parseInt(parts[5])
+                        });
+                    }
                 }
                 
+                // 날짜 기준으로 정렬
+                data.sort((a, b) => new Date(a.date) - new Date(b.date));
+                
+                console.log(`Loaded ${name}: ${data.length} rows, ${data[0]?.date} to ${data[data.length-1]?.date}`);
                 return data;
             } catch (error) {
                 console.error(`Error loading ${name}:`, error);
@@ -651,24 +657,41 @@
                 result.push({
                     date: data[i].date,
                     close: data[i].close,
-                    zScore: zScore
+                    volume: data[i].volume,
+                    zScore: zScore,
+                    dollarVolume: currentDollarVolume
                 });
             }
             
+            console.log(`Z-Score calculated: ${result.length} data points, first: ${result[0]?.date}, last: ${result[result.length-1]?.date}`);
             return result;
         }
 
-        // 신호 감지
+        // 신호 감지 (개선된 버전)
         function detectSignals(data2x, data3x, assetData) {
             const signals = [];
             
-            for (let i = 0; i < Math.min(data2x.length, data3x.length); i++) {
-                if (data2x[i].zScore >= threshold2x && data3x[i].zScore >= threshold3x) {
-                    // 날짜로 자산 가격 찾기
-                    const assetIndex = assetData.findIndex(d => d.date === data2x[i].date);
-                    if (assetIndex === -1) continue;
-                    
-                    const entryPrice = assetData[assetIndex].close;
+            // 날짜를 키로 하는 맵 생성 (빠른 검색)
+            const assetMap = new Map();
+            assetData.forEach((d, index) => {
+                assetMap.set(d.date, { data: d, index: index });
+            });
+            
+            // 2x와 3x ETF 데이터를 날짜로 정렬하여 매칭
+            const commonDates = data2x.filter(d2 => {
+                const d3 = data3x.find(d => d.date === d2.date);
+                return d3 && assetMap.has(d2.date);
+            });
+            
+            console.log(`Checking ${commonDates.length} common dates for signals`);
+            
+            for (const d2 of commonDates) {
+                const d3 = data3x.find(d => d.date === d2.date);
+                
+                if (d2.zScore >= threshold2x && d3.zScore >= threshold3x) {
+                    const assetInfo = assetMap.get(d2.date);
+                    const assetIndex = assetInfo.index;
+                    const entryPrice = assetInfo.data.close;
                     
                     // 수익률 계산
                     const returns = {};
@@ -683,12 +706,20 @@
                     });
                     
                     signals.push({
-                        date: data2x[i].date,
-                        zscore2x: data2x[i].zScore,
-                        zscore3x: data3x[i].zScore,
+                        date: d2.date,
+                        zscore2x: d2.zScore,
+                        zscore3x: d3.zScore,
+                        dollarVolume2x: d2.dollarVolume,
+                        dollarVolume3x: d3.dollarVolume,
                         ...returns
                     });
                 }
+            }
+            
+            console.log(`Detected ${signals.length} signals with thresholds 2x≥${threshold2x}, 3x≥${threshold3x}`);
+            if (signals.length > 0) {
+                console.log('First signal:', signals[0]);
+                console.log('Last signal:', signals[signals.length - 1]);
             }
             
             return signals;
