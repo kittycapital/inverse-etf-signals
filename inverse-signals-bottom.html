@@ -839,7 +839,7 @@
             // 신호 지점 - 날짜 기반으로 정확히 매칭
             const signalPoints = signals.map(s => {
                 const index = labels.indexOf(s.date);
-                return index !== -1 ? { x: index, y: prices[index] } : null;
+                return index !== -1 ? { x: s.date, y: prices[index] } : null;
             }).filter(p => p !== null);
             
             console.log(`Chart: ${signalPoints.length} signal markers plotted out of ${signals.length} signals`);
