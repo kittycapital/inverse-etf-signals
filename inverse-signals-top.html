@@ -534,16 +534,22 @@
                 
                 for (let i = 1; i < lines.length; i++) {
                     const parts = lines[i].split(',');
-                    data.push({
-                        date: parts[0],
-                        close: parseFloat(parts[1]),
-                        high: parseFloat(parts[2]),
-                        low: parseFloat(parts[3]),
-                        open: parseFloat(parts[4]),
-                        volume: parseInt(parts[5])
-                    });
+                    if (parts.length >= 6) {
+                        data.push({
+                            date: parts[0].trim(),
+                            close: parseFloat(parts[1]),
+                            high: parseFloat(parts[2]),
+                            low: parseFloat(parts[3]),
+                            open: parseFloat(parts[4]),
+                            volume: parseInt(parts[5])
+                        });
+                    }
                 }
                 
+                // 날짜 기준으로 정렬
+                data.sort((a, b) => new Date(a.date) - new Date(b.date));
+                
+                console.log(`Loaded ${name}: ${data.length} rows, ${data[0]?.date} to ${data[data.length-1]?.date}`);
                 return data;
             } catch (error) {
                 console.error(`Error loading ${name}:`, error);
@@ -569,10 +575,12 @@
                 result.push({
                     date: data[i].date,
                     close: data[i].close,
+                    volume: data[i].volume,
                     zScore: zScore
                 });
             }
             
+            console.log(`Z-Score calculated: ${result.length} data points`);
             return result;
         }
 
