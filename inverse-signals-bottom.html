@@ -639,31 +639,30 @@
             }
         }
 
-        // Z-Score 계산
+        // Z-Score 계산 (순수 볼륨 기준)
         function calculateZScore(data, windowSize) {
             const result = [];
             
             for (let i = windowSize; i < data.length; i++) {
                 const window = data.slice(i - windowSize, i);
-                const dollarVolumes = window.map(d => d.volume * d.close);
+                const volumes = window.map(d => d.volume);
                 
-                const mean = dollarVolumes.reduce((a, b) => a + b, 0) / dollarVolumes.length;
-                const variance = dollarVolumes.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / dollarVolumes.length;
+                const mean = volumes.reduce((a, b) => a + b, 0) / volumes.length;
+                const variance = volumes.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / volumes.length;
                 const stdDev = Math.sqrt(variance);
                 
-                const currentDollarVolume = data[i].volume * data[i].close;
-                const zScore = stdDev === 0 ? 0 : (currentDollarVolume - mean) / stdDev;
+                const currentVolume = data[i].volume;
+                const zScore = stdDev === 0 ? 0 : (currentVolume - mean) / stdDev;
                 
                 result.push({
                     date: data[i].date,
                     close: data[i].close,
                     volume: data[i].volume,
-                    zScore: zScore,
-                    dollarVolume: currentDollarVolume
+                    zScore: zScore
                 });
             }
             
-            console.log(`Z-Score calculated: ${result.length} data points, first: ${result[0]?.date}, last: ${result[result.length-1]?.date}`);
+            console.log(`Z-Score calculated (volume-based): ${result.length} data points, first: ${result[0]?.date}, last: ${result[result.length-1]?.date}`);
             return result;
         }
 
@@ -709,8 +708,8 @@
                         date: d2.date,
                         zscore2x: d2.zScore,
                         zscore3x: d3.zScore,
-                        dollarVolume2x: d2.dollarVolume,
-                        dollarVolume3x: d3.dollarVolume,
+                        volume2x: d2.volume,
+                        volume3x: d3.volume,
                         ...returns
                     });
                 }
