@@ -832,18 +832,17 @@
         function updateChart(asset, data2x, data3x, signals) {
             const assetData = allData[asset];
             
-            // 날짜 정렬
-            const startDate = data2x[0].date;
-            const assetFiltered = assetData.filter(d => d.date >= startDate);
+            // 전체 자산 데이터 사용
+            const labels = assetData.map(d => d.date);
+            const prices = assetData.map(d => d.close);
             
-            const labels = assetFiltered.map(d => d.date);
-            const prices = assetFiltered.map(d => d.close);
-            
-            // 신호 지점
+            // 신호 지점 - 날짜 기반으로 정확히 매칭
             const signalPoints = signals.map(s => {
                 const index = labels.indexOf(s.date);
                 return index !== -1 ? { x: index, y: prices[index] } : null;
             }).filter(p => p !== null);
+            
+            console.log(`Chart: ${signalPoints.length} signal markers plotted out of ${signals.length} signals`);
             
             const ctx = document.getElementById('historicalChart').getContext('2d');
             
