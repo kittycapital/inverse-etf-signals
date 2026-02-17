@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inverse ETF Volume Spike Signals | Herdvibe.com</title>
+    <meta name="description" content="레버리지 인버스 ETF 볼륨 스파이크로 시장 바닥 신호 감지 - SPY, QQQ, DIA, IWM 백테스트 분석">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0e27;
+            color: #e8eaf6;
+        }
+
+        .main-container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Iframe containers */
+        .iframe-container {
+            width: 100%;
+            border: none;
+            overflow: hidden;
+        }
+
+        .top-iframe {
+            height: 850px;
+            border-bottom: 2px solid #2a2f4a;
+        }
+
+        .bottom-iframe {
+            height: 850px;
+        }
+
+        /* 광고 공간 */
+        .ad-space {
+            width: 100%;
+            min-height: 100px;
+            background: linear-gradient(135deg, #141932 0%, #1a1f3a 100%);
+            border-top: 1px solid #2a2f4a;
+            border-bottom: 1px solid #2a2f4a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .ad-placeholder {
+            text-align: center;
+            color: #5c6ac4;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .top-iframe,
+            .bottom-iframe {
+                height: 900px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- 상단 대시보드 (실시간 모니터링) -->
+        <iframe 
+            src="inverse-signals-top.html" 
+            class="iframe-container top-iframe"
+            title="Real-time Monitoring Dashboard"
+            frameborder="0"
+            scrolling="no">
+        </iframe>
+
+        <!-- 광고 공간 -->
+        <div class="ad-space" id="ad-space">
+            <!-- 🎯 여기에 광고 코드를 삽입하세요 -->
+            <div class="ad-placeholder">
+                [ 광고 공간 - 여기에 광고 HTML 코드를 삽입하세요 ]
+            </div>
+        </div>
+
+        <!-- 하단 대시보드 (백테스트 & 분석) -->
+        <iframe 
+            src="inverse-signals-bottom.html" 
+            class="iframe-container bottom-iframe"
+            title="Backtest Analysis Dashboard"
+            frameborder="0"
+            scrolling="no">
+        </iframe>
+    </div>
+</body>
+</html>

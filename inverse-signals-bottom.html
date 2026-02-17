@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inverse ETF Volume Spike Signals - Backtest Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0e27;
+            --bg-card: #141932;
+            --bg-elevated: #1a1f3a;
+            --text-primary: #e8eaf6;
+            --text-secondary: #9fa8da;
+            --text-muted: #5c6ac4;
+            --accent-bull: #00e676;
+            --accent-bear: #ff1744;
+            --accent-warning: #ffd600;
+            --accent-neutral: #7c4dff;
+            --border: #2a2f4a;
+            --shadow: rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 100%;
+            padding: 20px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .tab {
+            font-family: 'JetBrains Mono', monospace;
+            padding: 12px 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tab:hover {
+            background: var(--bg-elevated);
+            border-color: var(--accent-neutral);
+            transform: translateY(-2px);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, var(--accent-neutral), var(--accent-bull));
+            border-color: var(--accent-neutral);
+            color: white;
+            box-shadow: 0 4px 20px rgba(124, 77, 255, 0.3);
+        }
+
+        /* Settings Summary */
+        .settings-summary {
+            background: var(--bg-card);
+            padding: 15px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .settings-summary strong {
+            color: var(--accent-neutral);
+        }
+
+        /* Controls */
+        .controls {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .control-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .radio-option input[type="radio"] {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .radio-option input[type="radio"]:checked {
+            border-color: var(--accent-neutral);
+            background: var(--accent-neutral);
+        }
+
+        .radio-option input[type="radio"]:checked::after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .radio-option label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .slider-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .slider {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 5px;
+            border-radius: 3px;
+            background: var(--bg-elevated);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-neutral);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(124, 77, 255, 0.5);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-neutral);
+            cursor: pointer;
+            border: none;
+        }
+
+        .slider-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent-neutral);
+            min-width: 40px;
+            text-align: right;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: var(--bg-card);
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+            height: 350px;
+        }
+
+        .chart-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+
+        /* Backtest Results */
+        .backtest-results {
+            background: var(--bg-card);
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .backtest-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: var(--bg-elevated);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .stat-card .period {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .stat-card .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .metric .label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .stat-card .metric .value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .stat-card .metric .value.positive {
+            color: var(--accent-bull);
+        }
+
+        .stat-card .metric .value.negative {
+            color: var(--accent-bear);
+        }
+
+        .total-signals {
+            background: linear-gradient(135deg, rgba(124, 77, 255, 0.2) 0%, rgba(0, 230, 118, 0.2) 100%);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px solid var(--accent-neutral);
+        }
+
+        .total-signals .label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .total-signals .value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--accent-neutral);
+        }
+
+        /* Signal History Table */
+        .signal-history {
+            background: var(--bg-card);
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .table-container {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            background: var(--bg-elevated);
+            z-index: 1;
+        }
+
+        th {
+            padding: 12px 10px;
+            text-align: left;
+            color: var(--text-muted);
+            font-weight: 600;
+            border-bottom: 2px solid var(--border);
+            text-transform: uppercase;
+            font-size: 10px;
+        }
+
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        tbody tr:hover {
+            background: var(--bg-elevated);
+            cursor: pointer;
+        }
+
+        .return {
+            font-weight: 700;
+        }
+
+        .return.positive {
+            color: var(--accent-bull);
+        }
+
+        .return.negative {
+            color: var(--accent-bear);
+        }
+
+        /* Watermark */
+        .watermark {
+            text-align: center;
+            padding: 15px;
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .watermark a {
+            color: var(--accent-neutral);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" data-asset="SPY">S&P 500 (SPY)</div>
+            <div class="tab" data-asset="QQQ">Nasdaq-100 (QQQ)</div>
+            <div class="tab" data-asset="DIA">Dow Jones (DIA)</div>
+            <div class="tab" data-asset="IWM">Russell 2000 (IWM)</div>
+        </div>
+
+        <!-- Settings Summary -->
+        <div class="settings-summary" id="settings-summary">
+            현재 설정: <strong>60일</strong> Z-Score, 2x≥<strong>1.5</strong>σ, 3x≥<strong>1.5</strong>σ
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label class="control-label">Z-Score 계산 기간</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="period" value="20" id="period-20">
+                            <label for="period-20">20일</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="period" value="60" id="period-60" checked>
+                            <label for="period-60">60일</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="period" value="120" id="period-120">
+                            <label for="period-120">120일</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">2x 인버스 ETF 임계값</label>
+                    <div class="slider-wrapper">
+                        <input type="range" min="1.0" max="3.0" step="0.1" value="1.5" class="slider" id="threshold-2x">
+                        <div class="slider-value" id="value-2x">1.5</div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">3x 인버스 ETF 임계값</label>
+                    <div class="slider-wrapper">
+                        <input type="range" min="1.0" max="3.0" step="0.1" value="1.5" class="slider" id="threshold-3x">
+                        <div class="slider-value" id="value-3x">1.5</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart -->
+        <div class="chart-container">
+            <div class="chart-title">전체 기간 가격 추이 & 신호 발생 지점</div>
+            <canvas id="historicalChart"></canvas>
+        </div>
+
+        <!-- Backtest Results -->
+        <div class="backtest-results">
+            <div class="backtest-title">📊 백테스트 결과</div>
+            
+            <div class="total-signals">
+                <div class="label">총 신호 발생</div>
+                <div class="value" id="total-signals">0회</div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="period">7일 수익률</div>
+                    <div class="metric">
+                        <span class="label">승률</span>
+                        <span class="value" id="winrate-7">-</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">평균</span>
+                        <span class="value" id="avg-7">-</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">최고</span>
+                        <span class="value positive" id="max-7">-</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">최저</span>
+                        <span class="value negative" id="min-7">-</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="period">14일 수익률</div>
+                    <div class="metric">
+                        <span class="label">승률</span>
+                        <span class="value" id="winrate-14">-</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">평균</span>
+                        <span class="value" id="avg-14">-</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">최고</span>
+                        <span class="value positive" id="max-14">-</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">최저</span>
+                        <span class="value negative" id="min-14">-</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="period">30일 수익률</div>
+                    <div class="metric">
+                        <span class="label">승률</span>
+                        <span class="value" id="winrate-30">-</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">평균</span>
+                        <span class="value" id="avg-30">-</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">최고</span>
+                        <span class="value positive" id="max-30">-</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">최저</span>
+                        <span class="value negative" id="min-30">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Signal History -->
+        <div class="signal-history">
+            <div class="chart-title">과거 신호 발생 이력</div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>날짜</th>
+                            <th>2x Z-Score</th>
+                            <th>3x Z-Score</th>
+                            <th>7일 수익률</th>
+                            <th>14일 수익률</th>
+                            <th>30일 수익률</th>
+                        </tr>
+                    </thead>
+                    <tbody id="signal-table-body">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--text-muted);">
+                                데이터 로딩 중...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="watermark">
+        Powered by <a href="https://herdvibe.com" target="_blank">Herdvibe.com</a> | Inverse ETF Signal Backtester
+    </div>
+
+    <script>
+        // 전역 변수
+        let currentAsset = 'SPY';
+        let period = 60;
+        let threshold2x = 1.5;
+        let threshold3x = 1.5;
+        let allData = {};
+        let chart = null;
+
+        // ETF 매핑
+        const etfMapping = {
+            'SPY': { '2x': 'SDS', '3x': 'SPXU' },
+            'QQQ': { '2x': 'QID', '3x': 'SQQQ' },
+            'DIA': { '2x': 'DOG', '3x': 'SDOW' },
+            'IWM': { '2x': 'RWM', '3x': 'TZA' }
+        };
+
+        // 데이터 로드
+        async function loadData() {
+            const assets = ['SPY', 'QQQ', 'DIA', 'IWM'];
+            const etfs = ['SDS', 'QID', 'DOG', 'RWM', 'SPXU', 'SQQQ', 'SDOW', 'TZA'];
+            
+            for (const asset of assets) {
+                allData[asset] = await loadCSV(asset);
+            }
+            
+            for (const etf of etfs) {
+                allData[etf] = await loadCSV(etf + '_cleaned');
+            }
+            
+            updateDashboard();
+        }
+
+        // CSV 로드
+        async function loadCSV(name) {
+            try {
+                const response = await fetch(name + '.csv');
+                const text = await response.text();
+                const lines = text.trim().split('\n');
+                const data = [];
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const parts = lines[i].split(',');
+                    data.push({
+                        date: parts[0],
+                        close: parseFloat(parts[1]),
+                        high: parseFloat(parts[2]),
+                        low: parseFloat(parts[3]),
+                        open: parseFloat(parts[4]),
+                        volume: parseInt(parts[5])
+                    });
+                }
+                
+                return data;
+            } catch (error) {
+                console.error(`Error loading ${name}:`, error);
+                return [];
+            }
+        }
+
+        // Z-Score 계산
+        function calculateZScore(data, windowSize) {
+            const result = [];
+            
+            for (let i = windowSize; i < data.length; i++) {
+                const window = data.slice(i - windowSize, i);
+                const dollarVolumes = window.map(d => d.volume * d.close);
+                
+                const mean = dollarVolumes.reduce((a, b) => a + b, 0) / dollarVolumes.length;
+                const variance = dollarVolumes.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / dollarVolumes.length;
+                const stdDev = Math.sqrt(variance);
+                
+                const currentDollarVolume = data[i].volume * data[i].close;
+                const zScore = stdDev === 0 ? 0 : (currentDollarVolume - mean) / stdDev;
+                
+                result.push({
+                    date: data[i].date,
+                    close: data[i].close,
+                    zScore: zScore
+                });
+            }
+            
+            return result;
+        }
+
+        // 신호 감지
+        function detectSignals(data2x, data3x, assetData) {
+            const signals = [];
+            
+            for (let i = 0; i < Math.min(data2x.length, data3x.length); i++) {
+                if (data2x[i].zScore >= threshold2x && data3x[i].zScore >= threshold3x) {
+                    // 날짜로 자산 가격 찾기
+                    const assetIndex = assetData.findIndex(d => d.date === data2x[i].date);
+                    if (assetIndex === -1) continue;
+                    
+                    const entryPrice = assetData[assetIndex].close;
+                    
+                    // 수익률 계산
+                    const returns = {};
+                    [7, 14, 30].forEach(days => {
+                        const exitIndex = assetIndex + days;
+                        if (exitIndex < assetData.length) {
+                            const exitPrice = assetData[exitIndex].close;
+                            returns[`day${days}`] = ((exitPrice - entryPrice) / entryPrice) * 100;
+                        } else {
+                            returns[`day${days}`] = null;
+                        }
+                    });
+                    
+                    signals.push({
+                        date: data2x[i].date,
+                        zscore2x: data2x[i].zScore,
+                        zscore3x: data3x[i].zScore,
+                        ...returns
+                    });
+                }
+            }
+            
+            return signals;
+        }
+
+        // 백테스트 통계 계산
+        function calculateBacktestStats(signals) {
+            const stats = {
+                total: signals.length,
+                day7: { winrate: 0, avg: 0, max: 0, min: 0 },
+                day14: { winrate: 0, avg: 0, max: 0, min: 0 },
+                day30: { winrate: 0, avg: 0, max: 0, min: 0 }
+            };
+            
+            if (signals.length === 0) return stats;
+            
+            [7, 14, 30].forEach(days => {
+                const key = `day${days}`;
+                const returns = signals.map(s => s[key]).filter(r => r !== null);
+                
+                if (returns.length > 0) {
+                    const wins = returns.filter(r => r > 0).length;
+                    stats[key].winrate = (wins / returns.length) * 100;
+                    stats[key].avg = returns.reduce((a, b) => a + b, 0) / returns.length;
+                    stats[key].max = Math.max(...returns);
+                    stats[key].min = Math.min(...returns);
+                }
+            });
+            
+            return stats;
+        }
+
+        // 대시보드 업데이트
+        function updateDashboard() {
+            const asset = currentAsset;
+            const etf2x = etfMapping[asset]['2x'];
+            const etf3x = etfMapping[asset]['3x'];
+            
+            // 설정 요약 업데이트
+            document.getElementById('settings-summary').innerHTML = 
+                `현재 설정: <strong>${period}일</strong> Z-Score, 2x≥<strong>${threshold2x.toFixed(1)}</strong>σ, 3x≥<strong>${threshold3x.toFixed(1)}</strong>σ`;
+            
+            // Z-Score 계산
+            const data2x = calculateZScore(allData[etf2x], period);
+            const data3x = calculateZScore(allData[etf3x], period);
+            
+            if (data2x.length === 0 || data3x.length === 0) return;
+            
+            // 신호 감지
+            const signals = detectSignals(data2x, data3x, allData[asset]);
+            
+            // 백테스트 통계
+            const stats = calculateBacktestStats(signals);
+            
+            // UI 업데이트
+            updateBacktestStats(stats);
+            updateSignalTable(signals);
+            updateChart(asset, data2x, data3x, signals);
+        }
+
+        // 백테스트 통계 업데이트
+        function updateBacktestStats(stats) {
+            document.getElementById('total-signals').textContent = `${stats.total}회`;
+            
+            [7, 14, 30].forEach(days => {
+                const key = `day${days}`;
+                const s = stats[key];
+                
+                document.getElementById(`winrate-${days}`).textContent = s.winrate.toFixed(1) + '%';
+                document.getElementById(`avg-${days}`).textContent = (s.avg >= 0 ? '+' : '') + s.avg.toFixed(2) + '%';
+                document.getElementById(`avg-${days}`).className = s.avg >= 0 ? 'value positive' : 'value negative';
+                document.getElementById(`max-${days}`).textContent = '+' + s.max.toFixed(2) + '%';
+                document.getElementById(`min-${days}`).textContent = s.min.toFixed(2) + '%';
+            });
+        }
+
+        // 신호 테이블 업데이트
+        function updateSignalTable(signals) {
+            const tbody = document.getElementById('signal-table-body');
+            
+            if (signals.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--text-muted);">
+                            신호 발생 이력이 없습니다.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = signals.reverse().map(s => `
+                <tr>
+                    <td>${s.date}</td>
+                    <td>${s.zscore2x.toFixed(2)}σ</td>
+                    <td>${s.zscore3x.toFixed(2)}σ</td>
+                    <td class="return ${s.day7 >= 0 ? 'positive' : 'negative'}">
+                        ${s.day7 !== null ? (s.day7 >= 0 ? '+' : '') + s.day7.toFixed(2) + '%' : '-'}
+                    </td>
+                    <td class="return ${s.day14 >= 0 ? 'positive' : 'negative'}">
+                        ${s.day14 !== null ? (s.day14 >= 0 ? '+' : '') + s.day14.toFixed(2) + '%' : '-'}
+                    </td>
+                    <td class="return ${s.day30 >= 0 ? 'positive' : 'negative'}">
+                        ${s.day30 !== null ? (s.day30 >= 0 ? '+' : '') + s.day30.toFixed(2) + '%' : '-'}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 차트 업데이트
+        function updateChart(asset, data2x, data3x, signals) {
+            const assetData = allData[asset];
+            
+            // 날짜 정렬
+            const startDate = data2x[0].date;
+            const assetFiltered = assetData.filter(d => d.date >= startDate);
+            
+            const labels = assetFiltered.map(d => d.date);
+            const prices = assetFiltered.map(d => d.close);
+            
+            // 신호 지점
+            const signalPoints = signals.map(s => {
+                const index = labels.indexOf(s.date);
+                return index !== -1 ? { x: index, y: prices[index] } : null;
+            }).filter(p => p !== null);
+            
+            const ctx = document.getElementById('historicalChart').getContext('2d');
+            
+            if (chart) {
+                chart.destroy();
+            }
+            
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: asset + ' Price',
+                            data: prices,
+                            borderColor: '#7c4dff',
+                            backgroundColor: 'rgba(124, 77, 255, 0.05)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.1,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'Signal',
+                            data: signalPoints,
+                            type: 'scatter',
+                            backgroundColor: '#ff1744',
+                            borderColor: '#ff1744',
+                            pointRadius: 6,
+                            pointHoverRadius: 8
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'nearest',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#9fa8da',
+                                font: {
+                                    family: 'JetBrains Mono'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(20, 25, 50, 0.95)',
+                            titleColor: '#e8eaf6',
+                            bodyColor: '#9fa8da',
+                            borderColor: '#2a2f4a',
+                            borderWidth: 1,
+                            titleFont: {
+                                family: 'JetBrains Mono'
+                            },
+                            bodyFont: {
+                                family: 'JetBrains Mono'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: '#9fa8da',
+                                font: {
+                                    family: 'JetBrains Mono',
+                                    size: 10
+                                },
+                                maxTicksLimit: 12
+                            },
+                            grid: {
+                                color: 'rgba(42, 47, 74, 0.3)'
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: '#7c4dff',
+                                font: {
+                                    family: 'JetBrains Mono'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(42, 47, 74, 0.3)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 이벤트 리스너
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentAsset = tab.dataset.asset;
+                updateDashboard();
+            });
+        });
+
+        document.querySelectorAll('input[name="period"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                period = parseInt(e.target.value);
+                updateDashboard();
+            });
+        });
+
+        document.getElementById('threshold-2x').addEventListener('input', (e) => {
+            threshold2x = parseFloat(e.target.value);
+            document.getElementById('value-2x').textContent = threshold2x.toFixed(1);
+            updateDashboard();
+        });
+
+        document.getElementById('threshold-3x').addEventListener('input', (e) => {
+            threshold3x = parseFloat(e.target.value);
+            document.getElementById('value-3x').textContent = threshold3x.toFixed(1);
+            updateDashboard();
+        });
+
+        // 초기 로드
+        loadData();
+    </script>
+</body>
+</html>
