@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inverse ETF Volume Spike Signals - Backtest Analysis</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -221,7 +223,14 @@
             border-radius: 10px;
             border: 1px solid var(--border);
             margin-bottom: 20px;
-            height: 350px;
+            height: 400px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
         }
 
         .chart-title {
@@ -230,7 +239,39 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             color: var(--text-muted);
-            margin-bottom: 15px;
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chart-btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            padding: 6px 14px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--bg-elevated);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .chart-btn:hover {
+            border-color: var(--accent-neutral);
+            color: var(--accent-neutral);
+            background: rgba(124, 77, 255, 0.1);
+        }
+
+        .zoom-hint {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 6px;
         }
 
         /* Backtest Results */
@@ -466,8 +507,17 @@
 
         <!-- Chart -->
         <div class="chart-container">
-            <div class="chart-title">전체 기간 가격 추이 & 신호 발생 지점</div>
+            <div class="chart-header">
+                <div class="chart-title">전체 기간 가격 추이 & 신호 발생 지점</div>
+                <div class="chart-controls">
+                    <button class="chart-btn" onclick="zoomRecent(365)">1Y</button>
+                    <button class="chart-btn" onclick="zoomRecent(730)">2Y</button>
+                    <button class="chart-btn" onclick="zoomRecent(1825)">5Y</button>
+                    <button class="chart-btn" onclick="resetZoom()">전체</button>
+                </div>
+            </div>
             <canvas id="historicalChart"></canvas>
+            <div class="zoom-hint">🖱️ 마우스 휠: 줌 | 드래그: 이동 | 버튼: 기간 선택</div>
         </div>
 
         <!-- Backtest Results -->
@@ -590,6 +640,28 @@
             'IWM': { '2x': 'RWM', '3x': 'TZA' }
         };
 
+        // 줌 관련 함수
+        function resetZoom() {
+            if (chart) {
+                chart.resetZoom();
+            }
+        }
+
+        function zoomRecent(days) {
+            if (!chart) return;
+            const labels = chart.data.labels;
+            const totalPoints = labels.length;
+            if (totalPoints === 0) return;
+
+            const endIndex = totalPoints - 1;
+            const startIndex = Math.max(0, totalPoints - days);
+
+            chart.zoomScale('x', {
+                min: labels[startIndex],
+                max: labels[endIndex]
+            });
+        }
+
         // 데이터 로드
         async function loadData() {
             const assets = ['SPY', 'QQQ', 'DIA', 'IWM'];
@@ -666,17 +738,15 @@
             return result;
         }
 
-        // 신호 감지 (개선된 버전)
+        // 신호 감지
         function detectSignals(data2x, data3x, assetData) {
             const signals = [];
             
-            // 날짜를 키로 하는 맵 생성 (빠른 검색)
             const assetMap = new Map();
             assetData.forEach((d, index) => {
                 assetMap.set(d.date, { data: d, index: index });
             });
             
-            // 2x와 3x ETF 데이터를 날짜로 정렬하여 매칭
             const commonDates = data2x.filter(d2 => {
                 const d3 = data3x.find(d => d.date === d2.date);
                 return d3 && assetMap.has(d2.date);
@@ -692,7 +762,6 @@
                     const assetIndex = assetInfo.index;
                     const entryPrice = assetInfo.data.close;
                     
-                    // 수익률 계산
                     const returns = {};
                     [7, 14, 30].forEach(days => {
                         const exitIndex = assetIndex + days;
@@ -757,23 +826,17 @@
             const etf2x = etfMapping[asset]['2x'];
             const etf3x = etfMapping[asset]['3x'];
             
-            // 설정 요약 업데이트
             document.getElementById('settings-summary').innerHTML = 
                 `현재 설정: <strong>${period}일</strong> Z-Score, 2x≥<strong>${threshold2x.toFixed(1)}</strong>σ, 3x≥<strong>${threshold3x.toFixed(1)}</strong>σ`;
             
-            // Z-Score 계산
             const data2x = calculateZScore(allData[etf2x], period);
             const data3x = calculateZScore(allData[etf3x], period);
             
             if (data2x.length === 0 || data3x.length === 0) return;
             
-            // 신호 감지
             const signals = detectSignals(data2x, data3x, allData[asset]);
-            
-            // 백테스트 통계
             const stats = calculateBacktestStats(signals);
             
-            // UI 업데이트
             updateBacktestStats(stats);
             updateSignalTable(signals);
             updateChart(asset, data2x, data3x, signals);
@@ -832,11 +895,10 @@
         function updateChart(asset, data2x, data3x, signals) {
             const assetData = allData[asset];
             
-            // 전체 자산 데이터 사용
             const labels = assetData.map(d => d.date);
             const prices = assetData.map(d => d.close);
             
-            // 신호 지점 - 날짜 기반으로 정확히 매칭
+            // 신호 지점 - x에 날짜 문자열 사용 (category 축 매칭)
             const signalPoints = signals.map(s => {
                 const index = labels.indexOf(s.date);
                 return index !== -1 ? { x: s.date, y: prices[index] } : null;
@@ -903,6 +965,31 @@
                             },
                             bodyFont: {
                                 family: 'JetBrains Mono'
+                            }
+                        },
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                modifierKey: null
+                            },
+                            zoom: {
+                                wheel: {
+                                    enabled: true,
+                                    speed: 0.1
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                drag: {
+                                    enabled: false
+                                },
+                                mode: 'x'
+                            },
+                            limits: {
+                                x: {
+                                    minRange: 30
+                                }
                             }
                         }
                     },
