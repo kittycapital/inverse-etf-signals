@@ -351,13 +351,16 @@
         /* Chart Container */
         .chart-container {
             background: var(--bg-card);
-            padding: 25px;
+            padding: 25px 25px 15px 25px;
             border-radius: 10px;
             border: 1px solid var(--border);
             margin-bottom: 20px;
-            height: 400px;
-            overflow: hidden;
+        }
+
+        .chart-canvas-wrap {
             position: relative;
+            width: 100%;
+            height: 350px;
         }
 
         .chart-title {
@@ -441,7 +444,8 @@
             .signal-alert .icon { font-size: 32px; margin-bottom: 6px; }
             .signal-alert .message { font-size: 14px; }
             .signal-alert .detail { font-size: 11px; }
-            .chart-container { padding: 10px 4px 14px 4px; height: 280px; margin-bottom: 16px; overflow: hidden; }
+            .chart-container { padding: 10px 6px 10px 6px; margin-bottom: 16px; }
+            .chart-canvas-wrap { height: 260px; }
             .chart-title { font-size: 10px; letter-spacing: 0.5px; }
             .watermark { font-size: 9px; padding: 10px; }
         }
@@ -535,7 +539,9 @@
         <!-- Chart -->
         <div class="chart-container">
             <div class="chart-title">최근 30일 가격 & Z-Score 추이</div>
-            <canvas id="priceChart"></canvas>
+            <div class="chart-canvas-wrap">
+                <canvas id="priceChart"></canvas>
+            </div>
         </div>
     </div>
 
@@ -788,7 +794,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     layout: {
-                        padding: isMobile ? { left: 2, right: 6, top: 4, bottom: 4 } : { left: 5, right: 10, top: 5, bottom: 5 }
+                        padding: isMobile ? { left: 2, right: 6, top: 4, bottom: 10 } : { left: 5, right: 10, top: 5, bottom: 12 }
                     },
                     interaction: {
                         mode: 'index',
