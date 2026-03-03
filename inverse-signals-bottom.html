@@ -309,13 +309,16 @@
         /* Chart Container */
         .chart-container {
             background: var(--bg-card);
-            padding: 25px;
+            padding: 25px 25px 15px 25px;
             border-radius: 10px;
             border: 1px solid var(--border);
             margin-bottom: 20px;
-            height: 400px;
-            overflow: hidden;
+        }
+
+        .chart-canvas-wrap {
             position: relative;
+            width: 100%;
+            height: 380px;
         }
 
         .chart-header {
@@ -545,7 +548,8 @@
             .slider-value { font-size: 14px; min-width: 36px; }
             .toggle-text { font-size: 11px; }
             .vix-controls-inner { gap: 10px; flex-wrap: wrap; }
-            .chart-container { padding: 10px 4px 14px 4px; height: 320px; margin-bottom: 24px; overflow: hidden; }
+            .chart-container { padding: 10px 6px 10px 6px; margin-bottom: 20px; }
+            .chart-canvas-wrap { height: 280px; }
             .chart-header { flex-direction: column; gap: 8px; align-items: center; }
             .chart-title { font-size: 10px; letter-spacing: 0.5px; }
             .chart-controls { gap: 4px; }
@@ -659,7 +663,9 @@
                     <button class="chart-btn" onclick="resetZoom()">전체</button>
                 </div>
             </div>
-            <canvas id="historicalChart"></canvas>
+            <div class="chart-canvas-wrap">
+                <canvas id="historicalChart"></canvas>
+            </div>
             <div class="zoom-hint">📊 버튼으로 기간을 선택하세요</div>
         </div>
 
@@ -1144,7 +1150,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     layout: {
-                        padding: isMobile ? { left: 2, right: 6, top: 4, bottom: 4 } : { left: 5, right: 10, top: 5, bottom: 5 }
+                        padding: isMobile ? { left: 2, right: 6, top: 4, bottom: 10 } : { left: 5, right: 10, top: 5, bottom: 12 }
                     },
                     interaction: { mode: 'nearest', intersect: false },
                     plugins: {
