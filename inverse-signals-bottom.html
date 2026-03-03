@@ -525,6 +525,46 @@
             .controls-row-2 { grid-template-columns: 1fr; }
             .stats-grid { grid-template-columns: 1fr; }
         }
+
+        @media (max-width: 600px) {
+            .hv-header { padding: 14px 16px; }
+            .hv-header h1 { font-size: 15px; white-space: normal; word-break: keep-all; }
+            .hv-header .subtitle { font-size: 9px; letter-spacing: 0.5px; }
+            .container { padding: 12px 10px; }
+            .tabs { gap: 4px; flex-wrap: wrap; justify-content: center; }
+            .tab { padding: 8px 10px; font-size: 11px; letter-spacing: 0; flex-shrink: 0; }
+            .settings-summary { padding: 10px 12px; font-size: 10px; word-break: keep-all; }
+            .controls { padding: 14px 10px; }
+            .controls-grid { gap: 12px; }
+            .controls-row-2 { gap: 12px; margin-top: 12px; padding-top: 12px; }
+            .control-label { font-size: 9px; letter-spacing: 0.5px; }
+            .radio-option label { font-size: 12px; }
+            .radio-option input[type="radio"] { width: 16px; height: 16px; }
+            .slider-value { font-size: 14px; min-width: 36px; }
+            .toggle-text { font-size: 11px; }
+            .vix-controls-inner { gap: 10px; flex-wrap: wrap; }
+            .chart-container { padding: 12px 6px; height: 300px; margin-bottom: 14px; }
+            .chart-header { flex-direction: column; gap: 8px; align-items: center; }
+            .chart-title { font-size: 10px; letter-spacing: 0.5px; }
+            .chart-controls { gap: 4px; }
+            .chart-btn { font-size: 9px; padding: 5px 10px; }
+            .chart-note { font-size: 8px; }
+            .backtest-results { padding: 14px 10px; }
+            .backtest-title { font-size: 10px; text-align: center; }
+            .total-signals { padding: 14px; }
+            .total-signals .label { font-size: 10px; }
+            .total-signals .value { font-size: 24px; }
+            .stat-card { padding: 12px 10px; }
+            .stat-card .period { font-size: 10px; }
+            .stat-card .metric .label { font-size: 11px; }
+            .stat-card .metric .value { font-size: 12px; }
+            .signal-history { padding: 14px 8px; }
+            table { font-size: 10px; }
+            th { padding: 8px 4px; font-size: 8px; letter-spacing: 0.3px; }
+            td { padding: 8px 4px; }
+            .table-container { max-height: 250px; }
+            .watermark { font-size: 9px; padding: 10px; }
+        }
     </style>
 </head>
 <body>
@@ -1030,6 +1070,8 @@
 
         // 차트 업데이트
         function updateChart(asset, data2x, data3x, signals) {
+            const isMobile = window.innerWidth <= 600;
+            const tickSize = isMobile ? 8 : 10;
             const assetData = allData[asset];
             
             const labels = assetData.map(d => d.date);
@@ -1056,7 +1098,7 @@
                             data: prices,
                             borderColor: '#3b82f6',
                             backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                            borderWidth: 2,
+                            borderWidth: isMobile ? 1.5 : 2,
                             fill: true,
                             tension: 0.1,
                             pointRadius: 0
@@ -1067,8 +1109,8 @@
                             type: 'scatter',
                             backgroundColor: '#ef4444',
                             borderColor: '#ef4444',
-                            pointRadius: 6,
-                            pointHoverRadius: 8
+                            pointRadius: isMobile ? 4 : 6,
+                            pointHoverRadius: isMobile ? 6 : 8
                         }
                     ]
                 },
@@ -1078,9 +1120,10 @@
                     interaction: { mode: 'nearest', intersect: false },
                     plugins: {
                         legend: {
+                            display: !isMobile,
                             labels: {
                                 color: '#8a8a8a',
-                                font: { family: 'JetBrains Mono' }
+                                font: { family: 'JetBrains Mono', size: tickSize }
                             }
                         },
                         tooltip: {
@@ -1089,8 +1132,8 @@
                             bodyColor: '#8a8a8a',
                             borderColor: 'rgba(255,255,255,0.06)',
                             borderWidth: 1,
-                            titleFont: { family: 'JetBrains Mono' },
-                            bodyFont: { family: 'JetBrains Mono' }
+                            titleFont: { family: 'JetBrains Mono', size: isMobile ? 10 : 12 },
+                            bodyFont: { family: 'JetBrains Mono', size: isMobile ? 10 : 12 }
                         },
                         zoom: {
                             pan: { enabled: true, mode: 'x', modifierKey: null },
@@ -1107,17 +1150,18 @@
                         x: {
                             ticks: {
                                 color: '#8a8a8a',
-                                font: { family: 'JetBrains Mono', size: 10 },
-                                maxTicksLimit: 12
+                                font: { family: 'JetBrains Mono', size: tickSize },
+                                maxTicksLimit: isMobile ? 5 : 12,
+                                maxRotation: isMobile ? 45 : 0
                             },
-                            grid: { color: 'rgba(42, 47, 74, 0.3)' }
+                            grid: { color: 'rgba(255,255,255,0.04)' }
                         },
                         y: {
                             ticks: {
                                 color: '#3b82f6',
-                                font: { family: 'JetBrains Mono' }
+                                font: { family: 'JetBrains Mono', size: tickSize }
                             },
-                            grid: { color: 'rgba(42, 47, 74, 0.3)' }
+                            grid: { color: 'rgba(255,255,255,0.04)' }
                         }
                     }
                 }
