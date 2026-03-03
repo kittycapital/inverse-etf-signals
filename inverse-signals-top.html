@@ -733,7 +733,8 @@
         // 차트 업데이트
         function updateChart(asset, data2x, data3x) {
             const isMobile = window.innerWidth <= 600;
-            const tickSize = isMobile ? 8 : 10;
+            const isTablet = window.innerWidth > 600 && window.innerWidth <= 1024;
+            const tickSize = isMobile ? 8 : (isTablet ? 9 : 11);
             const titleSize = isMobile ? 9 : 12;
             // 최근 30개 데이터 포인트
             const recent2x = data2x.slice(-30);
@@ -827,7 +828,9 @@
                                     family: 'JetBrains Mono',
                                     size: tickSize
                                 },
-                                maxTicksLimit: isMobile ? 6 : 10
+                                maxTicksLimit: isMobile ? 6 : (isTablet ? 8 : 10),
+                                autoSkip: true,
+                                autoSkipPadding: isMobile ? 15 : (isTablet ? 20 : 10)
                             },
                             grid: {
                                 color: 'rgba(255,255,255,0.04)'
