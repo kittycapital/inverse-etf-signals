@@ -660,7 +660,7 @@
                 </div>
             </div>
             <canvas id="historicalChart"></canvas>
-            <div class="zoom-hint">🖱️ 마우스 휠: 줌 | 드래그: 이동 | 버튼: 기간 선택</div>
+            <div class="zoom-hint">📊 버튼으로 기간을 선택하세요</div>
         </div>
 
         <!-- Backtest Results -->
@@ -813,18 +813,33 @@
         };
 
         // 줌 함수
+        var currentRange = 'all';
+
         function resetZoom() {
-            if (chart) chart.resetZoom();
+            currentRange = 'all';
+            updateDashboard();
+            highlightRangeBtn('all');
         }
 
         function zoomRecent(days) {
-            if (!chart) return;
-            const labels = chart.data.labels;
-            const totalPoints = labels.length;
-            if (totalPoints === 0) return;
-            const endIndex = totalPoints - 1;
-            const startIndex = Math.max(0, totalPoints - days);
-            chart.zoomScale('x', { min: labels[startIndex], max: labels[endIndex] });
+            currentRange = days;
+            updateDashboard();
+            highlightRangeBtn(days);
+        }
+
+        function highlightRangeBtn(range) {
+            document.querySelectorAll('.chart-btn').forEach(btn => {
+                btn.style.borderColor = '';
+                btn.style.color = '';
+                btn.style.background = '';
+            });
+            const btns = document.querySelectorAll('.chart-btn');
+            let idx = range === 'all' ? 3 : range === 365 ? 0 : range === 730 ? 1 : 2;
+            if (btns[idx]) {
+                btns[idx].style.borderColor = 'var(--accent-neutral)';
+                btns[idx].style.color = 'var(--accent-neutral)';
+                btns[idx].style.background = 'rgba(59,130,246,0.1)';
+            }
         }
 
         // 데이터 로드
@@ -1073,16 +1088,25 @@
         // 차트 업데이트
         function updateChart(asset, data2x, data3x, signals) {
             const isMobile = window.innerWidth <= 600;
-            const tickSize = isMobile ? 8 : 10;
-            const assetData = allData[asset];
+            const isTablet = window.innerWidth > 600 && window.innerWidth <= 1024;
+            const tickSize = isMobile ? 8 : (isTablet ? 9 : 11);
+            let assetData = allData[asset];
+            
+            // 기간 필터 적용
+            if (currentRange !== 'all' && assetData.length > currentRange) {
+                assetData = assetData.slice(-currentRange);
+            }
             
             const labels = assetData.map(d => d.date);
             const prices = assetData.map(d => d.close);
+            const dateSet = new Set(labels);
             
-            const signalPoints = signals.map(s => {
-                const index = labels.indexOf(s.date);
-                return index !== -1 ? { x: s.date, y: prices[index] } : null;
-            }).filter(p => p !== null);
+            const signalPoints = signals
+                .filter(s => dateSet.has(s.date))
+                .map(s => {
+                    const index = labels.indexOf(s.date);
+                    return index !== -1 ? { x: s.date, y: prices[index] } : null;
+                }).filter(p => p !== null);
             
             console.log(`Chart: ${signalPoints.length} signal markers plotted out of ${signals.length} signals`);
             
@@ -1156,8 +1180,10 @@
                             ticks: {
                                 color: '#8a8a8a',
                                 font: { family: 'JetBrains Mono', size: tickSize },
-                                maxTicksLimit: isMobile ? 5 : 12,
-                                maxRotation: isMobile ? 45 : 0
+                                maxTicksLimit: isMobile ? 5 : (isTablet ? 8 : 12),
+                                maxRotation: isMobile ? 45 : 0,
+                                autoSkip: true,
+                                autoSkipPadding: isMobile ? 15 : (isTablet ? 20 : 10)
                             },
                             grid: { color: 'rgba(255,255,255,0.04)' }
                         },
@@ -1227,8 +1253,10 @@
             if (vixEnabled) updateDashboard();
         });
 
+        // 차트 기간 버튼
         // 초기 로드
         loadData();
+        highlightRangeBtn('all');
     </script>
 </body>
 </html>
