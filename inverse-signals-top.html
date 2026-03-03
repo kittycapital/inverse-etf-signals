@@ -5,20 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inverse ETF Volume Spike Signals - Real-time Monitor</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #0a0e27;
-            --bg-card: #141932;
-            --bg-elevated: #1a1f3a;
-            --text-primary: #e8eaf6;
-            --text-secondary: #9fa8da;
-            --text-muted: #5c6ac4;
-            --accent-bull: #00e676;
-            --accent-bear: #ff1744;
-            --accent-warning: #ffd600;
-            --accent-neutral: #7c4dff;
-            --border: #2a2f4a;
+            --bg-dark: #000;
+            --bg-card: #111;
+            --bg-elevated: #1a1a1a;
+            --text-primary: #e5e5e5;
+            --text-secondary: #8a8a8a;
+            --text-muted: #555;
+            --accent-bull: #22c55e;
+            --accent-bear: #ef4444;
+            --accent-warning: #f59e0b;
+            --accent-neutral: #3b82f6;
+            --border: rgba(255,255,255,0.06);
             --shadow: rgba(0, 0, 0, 0.5);
         }
 
@@ -29,7 +29,7 @@
         }
 
         body {
-            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--bg-dark);
             color: var(--text-primary);
             line-height: 1.6;
@@ -43,28 +43,26 @@
 
         /* Header */
         .header {
-            background: linear-gradient(135deg, var(--bg-elevated) 0%, var(--bg-card) 100%);
+            background: var(--bg-card);
             padding: 20px 30px;
             border-bottom: 1px solid var(--border);
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
+            text-align: center;
             margin-bottom: 20px;
         }
 
         .header h1 {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 24px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 18px;
             font-weight: 700;
             letter-spacing: -0.5px;
-            background: linear-gradient(135deg, var(--accent-bull) 0%, var(--accent-neutral) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--text-primary);
         }
 
         .header .subtitle {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-muted);
             font-family: 'JetBrains Mono', monospace;
             text-transform: uppercase;
@@ -74,37 +72,36 @@
         /* Tabs */
         .tabs {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             margin-bottom: 25px;
             overflow-x: auto;
+            justify-content: center;
         }
 
         .tab {
             font-family: 'JetBrains Mono', monospace;
-            padding: 12px 24px;
+            padding: 10px 20px;
             background: var(--bg-card);
             border: 1px solid var(--border);
             color: var(--text-secondary);
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             border-radius: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
 
         .tab:hover {
             background: var(--bg-elevated);
-            border-color: var(--accent-neutral);
-            transform: translateY(-2px);
+            border-color: rgba(255,255,255,0.12);
         }
 
         .tab.active {
-            background: linear-gradient(135deg, var(--accent-neutral), var(--accent-bull));
+            background: var(--bg-elevated);
             border-color: var(--accent-neutral);
-            color: white;
-            box-shadow: 0 4px 20px rgba(124, 77, 255, 0.3);
+            color: var(--text-primary);
+            box-shadow: 0 1px 3px rgba(0,0,0,.5);
         }
 
         /* Controls */
@@ -132,11 +129,13 @@
             color: var(--text-muted);
             margin-bottom: 10px;
             display: block;
+            text-align: center;
         }
 
         .radio-group {
             display: flex;
             gap: 15px;
+            justify-content: center;
         }
 
         .radio-option {
@@ -211,13 +210,13 @@
             border-radius: 50%;
             background: var(--accent-neutral);
             cursor: pointer;
-            box-shadow: 0 2px 10px rgba(124, 77, 255, 0.5);
+            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.5);
             transition: all 0.2s ease;
         }
 
         .slider::-webkit-slider-thumb:hover {
             transform: scale(1.2);
-            box-shadow: 0 4px 15px rgba(124, 77, 255, 0.7);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.7);
         }
 
         .slider::-moz-range-thumb {
@@ -227,7 +226,7 @@
             background: var(--accent-neutral);
             cursor: pointer;
             border: none;
-            box-shadow: 0 2px 10px rgba(124, 77, 255, 0.5);
+            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.5);
         }
 
         .slider-value {
@@ -255,6 +254,7 @@
             letter-spacing: 1px;
             color: var(--text-muted);
             margin-bottom: 15px;
+            text-align: center;
         }
 
         .zscore-grid {
@@ -310,7 +310,7 @@
 
         /* Signal Alert */
         .signal-alert {
-            background: linear-gradient(135deg, rgba(255, 23, 68, 0.1) 0%, rgba(124, 77, 255, 0.1) 100%);
+            background: rgba(239,68,68,0.06);
             border: 2px solid var(--accent-bear);
             padding: 20px;
             border-radius: 10px;
@@ -344,7 +344,7 @@
         }
 
         .signal-alert.no-signal {
-            background: linear-gradient(135deg, rgba(0, 230, 118, 0.05) 0%, rgba(124, 77, 255, 0.05) 100%);
+            background: rgba(255,255,255,0.02);
             border-color: var(--border);
         }
 
@@ -365,6 +365,7 @@
             letter-spacing: 1px;
             color: var(--text-muted);
             margin-bottom: 15px;
+            text-align: center;
         }
 
         /* Watermark */
@@ -398,7 +399,7 @@
 <body>
     <div class="header">
         <div>
-            <h1>🎯 INVERSE ETF VOLUME SPIKE SIGNALS</h1>
+            <h1>인버스 ETF 거래량 폭발 시그널</h1>
             <div class="subtitle">Real-time Panic Detection System</div>
         </div>
     </div>
@@ -676,8 +677,8 @@
                         {
                             label: asset + ' Price',
                             data: recentAsset.map(d => d.close),
-                            borderColor: '#7c4dff',
-                            backgroundColor: 'rgba(124, 77, 255, 0.1)',
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
                             borderWidth: 2,
                             yAxisID: 'y',
                             tension: 0.3
@@ -685,8 +686,8 @@
                         {
                             label: etfMapping[asset]['2x'] + ' Z-Score',
                             data: recent2x.map(d => d.zScore),
-                            borderColor: '#ffd600',
-                            backgroundColor: 'rgba(255, 214, 0, 0.1)',
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
                             borderWidth: 2,
                             yAxisID: 'y1',
                             tension: 0.3
@@ -694,8 +695,8 @@
                         {
                             label: etfMapping[asset]['3x'] + ' Z-Score',
                             data: recent3x.map(d => d.zScore),
-                            borderColor: '#ff1744',
-                            backgroundColor: 'rgba(255, 23, 68, 0.1)',
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
                             borderWidth: 2,
                             yAxisID: 'y1',
                             tension: 0.3
@@ -712,17 +713,17 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#9fa8da',
+                                color: '#8a8a8a',
                                 font: {
                                     family: 'JetBrains Mono'
                                 }
                             }
                         },
                         tooltip: {
-                            backgroundColor: 'rgba(20, 25, 50, 0.95)',
-                            titleColor: '#e8eaf6',
-                            bodyColor: '#9fa8da',
-                            borderColor: '#2a2f4a',
+                            backgroundColor: 'rgba(17, 17, 17, 0.95)',
+                            titleColor: '#e5e5e5',
+                            bodyColor: '#8a8a8a',
+                            borderColor: 'rgba(255,255,255,0.06)',
                             borderWidth: 1,
                             titleFont: {
                                 family: 'JetBrains Mono'
@@ -735,32 +736,32 @@
                     scales: {
                         x: {
                             ticks: {
-                                color: '#9fa8da',
+                                color: '#8a8a8a',
                                 font: {
                                     family: 'JetBrains Mono',
                                     size: 10
                                 }
                             },
                             grid: {
-                                color: 'rgba(42, 47, 74, 0.5)'
+                                color: 'rgba(255,255,255,0.04)'
                             }
                         },
                         y: {
                             type: 'linear',
                             position: 'left',
                             ticks: {
-                                color: '#7c4dff',
+                                color: '#3b82f6',
                                 font: {
                                     family: 'JetBrains Mono'
                                 }
                             },
                             grid: {
-                                color: 'rgba(42, 47, 74, 0.5)'
+                                color: 'rgba(255,255,255,0.04)'
                             },
                             title: {
                                 display: true,
                                 text: 'Price',
-                                color: '#7c4dff',
+                                color: '#3b82f6',
                                 font: {
                                     family: 'JetBrains Mono'
                                 }
@@ -770,7 +771,7 @@
                             type: 'linear',
                             position: 'right',
                             ticks: {
-                                color: '#ff1744',
+                                color: '#ef4444',
                                 font: {
                                     family: 'JetBrains Mono'
                                 }
@@ -781,7 +782,7 @@
                             title: {
                                 display: true,
                                 text: 'Z-Score',
-                                color: '#ff1744',
+                                color: '#ef4444',
                                 font: {
                                     family: 'JetBrains Mono'
                                 }
