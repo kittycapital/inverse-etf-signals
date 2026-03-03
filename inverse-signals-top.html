@@ -356,6 +356,8 @@
             border: 1px solid var(--border);
             margin-bottom: 20px;
             height: 400px;
+            overflow: hidden;
+            position: relative;
         }
 
         .chart-title {
@@ -439,7 +441,7 @@
             .signal-alert .icon { font-size: 32px; margin-bottom: 6px; }
             .signal-alert .message { font-size: 14px; }
             .signal-alert .detail { font-size: 11px; }
-            .chart-container { padding: 12px 8px; height: 280px; margin-bottom: 12px; }
+            .chart-container { padding: 10px 4px 14px 4px; height: 280px; margin-bottom: 16px; overflow: hidden; }
             .chart-title { font-size: 10px; letter-spacing: 0.5px; }
             .watermark { font-size: 9px; padding: 10px; }
         }
@@ -784,6 +786,9 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: isMobile ? { left: 2, right: 6, top: 4, bottom: 4 } : { left: 5, right: 10, top: 5, bottom: 5 }
+                    },
                     interaction: {
                         mode: 'index',
                         intersect: false
