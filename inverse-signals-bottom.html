@@ -314,6 +314,8 @@
             border: 1px solid var(--border);
             margin-bottom: 20px;
             height: 400px;
+            overflow: hidden;
+            position: relative;
         }
 
         .chart-header {
@@ -543,13 +545,13 @@
             .slider-value { font-size: 14px; min-width: 36px; }
             .toggle-text { font-size: 11px; }
             .vix-controls-inner { gap: 10px; flex-wrap: wrap; }
-            .chart-container { padding: 12px 6px; height: 300px; margin-bottom: 14px; }
+            .chart-container { padding: 10px 4px 14px 4px; height: 320px; margin-bottom: 24px; overflow: hidden; }
             .chart-header { flex-direction: column; gap: 8px; align-items: center; }
             .chart-title { font-size: 10px; letter-spacing: 0.5px; }
             .chart-controls { gap: 4px; }
             .chart-btn { font-size: 9px; padding: 5px 10px; }
-            .chart-note { font-size: 8px; }
-            .backtest-results { padding: 14px 10px; }
+            .zoom-hint { font-size: 8px; margin-top: 4px; }
+            .backtest-results { padding: 14px 10px; margin-top: 8px; }
             .backtest-title { font-size: 10px; text-align: center; }
             .total-signals { padding: 14px; }
             .total-signals .label { font-size: 10px; }
@@ -1117,6 +1119,9 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: isMobile ? { left: 2, right: 6, top: 4, bottom: 4 } : { left: 5, right: 10, top: 5, bottom: 5 }
+                    },
                     interaction: { mode: 'nearest', intersect: false },
                     plugins: {
                         legend: {
