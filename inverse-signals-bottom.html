@@ -7,28 +7,28 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #0a0e27;
-            --bg-card: #141932;
-            --bg-elevated: #1a1f3a;
-            --text-primary: #e8eaf6;
-            --text-secondary: #9fa8da;
-            --text-muted: #5c6ac4;
-            --accent-bull: #00e676;
-            --accent-bear: #ff1744;
-            --accent-warning: #ffd600;
-            --accent-neutral: #7c4dff;
-            --accent-vix: #ff6d00;
-            --border: #2a2f4a;
+            --bg-dark: #000;
+            --bg-card: #111;
+            --bg-elevated: #1a1a1a;
+            --text-primary: #e5e5e5;
+            --text-secondary: #8a8a8a;
+            --text-muted: #555;
+            --accent-bull: #22c55e;
+            --accent-bear: #ef4444;
+            --accent-warning: #f59e0b;
+            --accent-neutral: #3b82f6;
+            --accent-vix: #f59e0b;
+            --border: rgba(255,255,255,0.06);
             --shadow: rgba(0, 0, 0, 0.5);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--bg-dark);
             color: var(--text-primary);
             line-height: 1.6;
@@ -38,34 +38,32 @@
         .container { max-width: 100%; padding: 20px; }
 
         /* Tabs */
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; justify-content: center; }
 
         .tab {
             font-family: 'JetBrains Mono', monospace;
-            padding: 12px 24px;
+            padding: 10px 20px;
             background: var(--bg-card);
             border: 1px solid var(--border);
             color: var(--text-secondary);
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             border-radius: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
 
         .tab:hover {
             background: var(--bg-elevated);
-            border-color: var(--accent-neutral);
-            transform: translateY(-2px);
+            border-color: rgba(255,255,255,0.12);
         }
 
         .tab.active {
-            background: linear-gradient(135deg, var(--accent-neutral), var(--accent-bull));
+            background: var(--bg-elevated);
             border-color: var(--accent-neutral);
-            color: white;
-            box-shadow: 0 4px 20px rgba(124, 77, 255, 0.3);
+            color: var(--text-primary);
+            box-shadow: 0 1px 3px rgba(0,0,0,.5);
         }
 
         /* Settings Summary */
@@ -78,6 +76,7 @@
             font-family: 'JetBrains Mono', monospace;
             font-size: 12px;
             color: var(--text-secondary);
+            text-align: center;
         }
 
         .settings-summary strong { color: var(--accent-neutral); }
@@ -116,11 +115,12 @@
             letter-spacing: 1px;
             color: var(--text-muted);
             margin-bottom: 10px;
+            text-align: center;
         }
 
         .control-label.vix-label { color: var(--accent-vix); }
 
-        .radio-group { display: flex; gap: 12px; }
+        .radio-group { display: flex; gap: 12px; justify-content: center; }
 
         .radio-option { display: flex; align-items: center; gap: 6px; cursor: pointer; }
 
@@ -179,7 +179,7 @@
             border-radius: 50%;
             background: var(--accent-neutral);
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(124, 77, 255, 0.5);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.5);
         }
 
         .slider::-moz-range-thumb {
@@ -309,6 +309,7 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             color: var(--text-muted);
+            text-align: center;
         }
 
         .chart-controls { display: flex; gap: 8px; }
@@ -330,7 +331,7 @@
         .chart-btn:hover {
             border-color: var(--accent-neutral);
             color: var(--accent-neutral);
-            background: rgba(124, 77, 255, 0.1);
+            background: rgba(59, 130, 246, 0.1);
         }
 
         .zoom-hint {
@@ -402,7 +403,7 @@
         .stat-card .metric .value.negative { color: var(--accent-bear); }
 
         .total-signals {
-            background: linear-gradient(135deg, rgba(124, 77, 255, 0.2) 0%, rgba(0, 230, 118, 0.2) 100%);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(0, 230, 118, 0.2) 100%);
             padding: 20px;
             border-radius: 8px;
             text-align: center;
@@ -1002,8 +1003,8 @@
                         {
                             label: asset + ' Price',
                             data: prices,
-                            borderColor: '#7c4dff',
-                            backgroundColor: 'rgba(124, 77, 255, 0.05)',
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.05)',
                             borderWidth: 2,
                             fill: true,
                             tension: 0.1,
@@ -1013,8 +1014,8 @@
                             label: 'Signal',
                             data: signalPoints,
                             type: 'scatter',
-                            backgroundColor: '#ff1744',
-                            borderColor: '#ff1744',
+                            backgroundColor: '#ef4444',
+                            borderColor: '#ef4444',
                             pointRadius: 6,
                             pointHoverRadius: 8
                         }
@@ -1027,15 +1028,15 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#9fa8da',
+                                color: '#8a8a8a',
                                 font: { family: 'JetBrains Mono' }
                             }
                         },
                         tooltip: {
-                            backgroundColor: 'rgba(20, 25, 50, 0.95)',
-                            titleColor: '#e8eaf6',
-                            bodyColor: '#9fa8da',
-                            borderColor: '#2a2f4a',
+                            backgroundColor: 'rgba(17, 17, 17, 0.95)',
+                            titleColor: '#e5e5e5',
+                            bodyColor: '#8a8a8a',
+                            borderColor: 'rgba(255,255,255,0.06)',
                             borderWidth: 1,
                             titleFont: { family: 'JetBrains Mono' },
                             bodyFont: { family: 'JetBrains Mono' }
@@ -1054,7 +1055,7 @@
                     scales: {
                         x: {
                             ticks: {
-                                color: '#9fa8da',
+                                color: '#8a8a8a',
                                 font: { family: 'JetBrains Mono', size: 10 },
                                 maxTicksLimit: 12
                             },
@@ -1062,7 +1063,7 @@
                         },
                         y: {
                             ticks: {
-                                color: '#7c4dff',
+                                color: '#3b82f6',
                                 font: { family: 'JetBrains Mono' }
                             },
                             grid: { color: 'rgba(42, 47, 74, 0.3)' }
