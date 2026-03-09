@@ -3,7 +3,7 @@ name: Update Inverse ETF Data
 on:
   # 매일 UTC 00:00 (한국 시간 09:00)에 실행
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 0 * * 1-5'
   
   # 수동 실행 가능
   workflow_dispatch:
