@@ -1,3 +1,3 @@
-Last Update: 2026-06-22 00:49:11 UTC
+Last Update: 2026-06-23 00:44:05 UTC
 Assets: SPY, QQQ, DIA, IWM
 Inverse ETFs: SDS, QID, DOG, RWM, SPXU, SQQQ, SDOW, TZA
